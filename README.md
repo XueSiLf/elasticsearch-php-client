@@ -1,1 +1,1 @@
-# elasticseach-php-client
+# elasticsearch-php-client

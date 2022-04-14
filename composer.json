@@ -1,0 +1,39 @@
+{
+    "name": "lava/elasticsearch-php-client",
+    "keywords": [
+        "search",
+        "client",
+        "swoole coroutine client",
+        "elasticsearch"
+    ],
+    "type": "library",
+    "license": [
+        "Apache-2.0"
+    ],
+    "authors": [
+        {
+            "name": "XueSi",
+            "email": "1592328848@qq.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3 || ^8.0",
+        "ext-json": ">=1.3.7",
+        "ext-swoole": ">=4.4.23",
+        "psr/log": "^1.1",
+        "easyswoole/http-client": "^1.5",
+        "monolog/monolog": "^2.4",
+        "easyswoole/swoole-ide-helper": "^1.3",
+        "easyswoole/phpunit": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lava\\ElasticSearch\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Lava\\ElasticSearch\\Tests\\": "tests/"
+        }
+    }
+}
