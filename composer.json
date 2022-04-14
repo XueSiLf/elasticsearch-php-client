@@ -3,7 +3,8 @@
     "keywords": [
         "search",
         "client",
-        "swoole coroutine client",
+        "coroutine elasticsearch php client",
+        "swoole coroutine elasticsearch php client",
         "elasticsearch"
     ],
     "type": "library",
@@ -23,7 +24,9 @@
         "psr/log": "^1.1",
         "easyswoole/http-client": "^1.5",
         "monolog/monolog": "^2.4",
-        "easyswoole/swoole-ide-helper": "^1.3",
+        "easyswoole/swoole-ide-helper": "^1.3"
+    },
+    "require-dev": {
         "easyswoole/phpunit": "^1.1"
     },
     "autoload": {

@@ -8,18 +8,18 @@
  */
 declare(strict_types=1);
 
-namespace Lava\ElasticSearch;
+namespace LavaMusic\ElasticSearch;
 
-use Lava\ElasticSearch\Common\Exceptions\InvalidArgumentException;
-use Lava\ElasticSearch\Common\Exceptions\RuntimeException;
-use Lava\ElasticSearch\ConnectionPool\AbstractConnectionPool;
-use Lava\ElasticSearch\ConnectionPool\Selectors\RoundRobinSelector;
-use Lava\ElasticSearch\ConnectionPool\StaticNoPingConnectionPool;
-use Lava\ElasticSearch\Connections\ConnectionFactory;
-use Lava\ElasticSearch\Connections\ConnectionFactoryInterface;
-use Lava\ElasticSearch\Handler\SwooleHandler;
-use Lava\ElasticSearch\Namespaces\NamespaceBuilderInterface;
-use Lava\ElasticSearch\Serializers\SmartSerializer;
+use LavaMusic\ElasticSearch\Common\Exceptions\InvalidArgumentException;
+use LavaMusic\ElasticSearch\Common\Exceptions\RuntimeException;
+use LavaMusic\ElasticSearch\ConnectionPool\AbstractConnectionPool;
+use LavaMusic\ElasticSearch\ConnectionPool\Selectors\RoundRobinSelector;
+use LavaMusic\ElasticSearch\ConnectionPool\StaticNoPingConnectionPool;
+use LavaMusic\ElasticSearch\Connections\ConnectionFactory;
+use LavaMusic\ElasticSearch\Connections\ConnectionFactoryInterface;
+use LavaMusic\ElasticSearch\Handler\SwooleHandler;
+use LavaMusic\ElasticSearch\Namespaces\NamespaceBuilderInterface;
+use LavaMusic\ElasticSearch\Serializers\SmartSerializer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use ReflectionClass;
@@ -153,7 +153,7 @@ class ClientBuilder
         if (extension_loaded('swoole')) {
             $default = new SwooleHandler();
         } else {
-            throw new \RuntimeException('Lava-Elasticsearch-PHP requires swoole.');
+            throw new \RuntimeException('LavaMusic-Elasticsearch-PHP requires swoole.');
         }
 
         return $default;
@@ -281,7 +281,7 @@ class ClientBuilder
     /**
      * Set the serializer
      *
-     * @param \Lava\Elasticsearch\Serializers\SerializerInterface|string $serializer
+     * @param \LavaMusic\ElasticSearch\Serializers\SerializerInterface|string $serializer
      */
     public function setSerializer($serializer): ClientBuilder
     {
@@ -410,7 +410,7 @@ class ClientBuilder
             $serializer = $this->serializer;
 
             $this->endpoint = function ($class) use ($serializer) {
-                $fullPath = '\\Lava\\ElasticSearch\\Endpoints\\' . $class;
+                $fullPath = '\\LavaMusic\\ElasticSearch\\Endpoints\\' . $class;
 
                 $reflection = new ReflectionClass($fullPath);
                 $constructor = $reflection->getConstructor();
@@ -496,7 +496,7 @@ class ClientBuilder
     }
 
     /**
-     * @return \Lava\Elasticsearch\Connections\Connection[]
+     * @return \LavaMusic\Elasticsearch\Connections\Connection[]
      * @throws RuntimeException
      */
     private function buildConnectionsFromHosts(array $hosts): array
