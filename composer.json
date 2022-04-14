@@ -1,5 +1,5 @@
 {
-    "name": "lava/elasticsearch-php-client",
+    "name": "lavamusic/elasticsearch-php-client",
     "keywords": [
         "search",
         "client",
@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Lava\\ElasticSearch\\": "src/"
+            "LavaMusic\\ElasticSearch\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Lava\\ElasticSearch\\Tests\\": "tests/"
+            "LavaMusic\\ElasticSearch\\Tests\\": "tests/"
         }
     }
 }
