@@ -1,10 +1,11 @@
 <?php
 /**
  * Created by PhpStorm.
- * Author: 黄龙辉 XueSi
+ * Author: hlh XueSi
  * Email: 1592328848@qq.com
  * Date: 2022/4/12 10:16:04
  */
+declare(strict_types=1);
 
 namespace LavaMusic\ElasticSearch\Endpoints\Indices;
 
@@ -17,7 +18,6 @@ use LavaMusic\ElasticSearch\Endpoints\AbstractEndpoint;
  */
 class Delete extends AbstractEndpoint
 {
-
     public function getURI(): string
     {
         $index = $this->index ?? null;

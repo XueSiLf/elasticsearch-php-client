@@ -1,0 +1,49 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * Author: hlh XueSi
+ * Email: 1592328848@qq.com
+ * Date: 2022/4/15 9:40:01
+ */
+declare(strict_types=1);
+
+namespace LavaMusic\ElasticSearch\Endpoints\Indices;
+
+use LavaMusic\ElasticSearch\Common\Exceptions\RuntimeException;
+use LavaMusic\ElasticSearch\Endpoints\AbstractEndpoint;
+
+/**
+ * Class Get
+ * Elasticsearch API name indices.get
+ */
+class Get extends AbstractEndpoint
+{
+    public function getURI(): string
+    {
+        $index = $this->index ?? null;
+
+        if (isset($index)) {
+            return "/$index";
+        }
+        throw new RuntimeException('Missing parameter for the endpoint indices.get');
+    }
+
+    public function getParamWhitelist(): array
+    {
+        return [
+            'include_type_name',
+            'local',
+            'ignore_unavailable',
+            'allow_no_indices',
+            'expand_wildcards',
+            'flat_settings',
+            'include_defaults',
+            'master_timeout'
+        ];
+    }
+
+    public function getMethod(): string
+    {
+        return 'GET';
+    }
+}

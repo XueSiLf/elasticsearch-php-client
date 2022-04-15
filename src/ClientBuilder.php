@@ -1,8 +1,7 @@
 <?php
 /**
  * Elasticsearch PHP client
- *
- * Author: XueSi
+ * Author: hlh XueSi
  * Email: 1592328848@qq.com
  * Date: 2022/4/11 18:22:40
  */
@@ -10,6 +9,8 @@ declare(strict_types=1);
 
 namespace LavaMusic\ElasticSearch;
 
+use LavaMusic\ElasticSearch\Common\Exceptions\AuthenticationConfigException;
+use LavaMusic\ElasticSearch\Common\Exceptions\ElasticCloudIdParseException;
 use LavaMusic\ElasticSearch\Common\Exceptions\InvalidArgumentException;
 use LavaMusic\ElasticSearch\Common\Exceptions\RuntimeException;
 use LavaMusic\ElasticSearch\ConnectionPool\AbstractConnectionPool;
@@ -144,6 +145,71 @@ class ClientBuilder
     }
 
     /**
+     * Can supply first parm to Client::__construct() when invoking manually or with dependency injection
+     */
+    public function getTransport(): Transport
+    {
+        return $this->transport;
+    }
+
+    /**
+     * Can supply second parm to Client::__construct() when invoking manually or with dependency injection
+     */
+    public function getEndpoint(): callable
+    {
+        return $this->endpoint;
+    }
+
+    /**
+     * Can supply third parm to Client::__construct() when invoking manually or with dependency injection
+     *
+     * @return NamespaceBuilderInterface[]
+     */
+    public function getRegisteredNamespacesBuilders(): array
+    {
+        return $this->registeredNamespacesBuilders;
+    }
+
+    /**
+     * Build a new client from the provided config.  Hash keys
+     * should correspond to the method name e.g. ['connectionPool']
+     * corresponds to setConnectionPool().
+     *
+     * Missing keys will use the default for that setting if applicable
+     *
+     * Unknown keys will throw an exception by default, but this can be silenced
+     * by setting `quiet` to true
+     *
+     * @param array $config
+     * @param bool $quiet False if unknown settings throw exception, true to silently
+     *                     ignore unknown settings
+     * @return Client
+     */
+    public static function fromConfig(array $config, bool $quiet = false): Client
+    {
+        $builder = new static;
+        foreach ($config as $key => $value) {
+            $method = in_array($key, self::ALLOWED_METHODS_FROM_CONFIG) ? $key : "set$key";
+            $reflection = new ReflectionClass($builder);
+            if ($reflection->hasMethod($method)) {
+                $func = $reflection->getMethod($method);
+                if ($func->getNumberOfParameters() > 1) {
+                    $builder->$method(...$value);
+                } else {
+                    $builder->$method($value);
+                }
+                unset($config[$key]);
+            }
+        }
+
+        if ($quiet === false && count($config) > 0) {
+            $unknown = implode(array_keys($config));
+            throw new RuntimeException("Unknown parameters provided: $unknown");
+        }
+        return $builder->build();
+    }
+
+    /**
      * Get the default handler
      *
      * @throws \RuntimeException
@@ -177,6 +243,7 @@ class ClientBuilder
      * Set connection Factory
      *
      * @param ConnectionFactoryInterface $connectionFactory
+     * @return $this
      */
     public function setConnectionFactory(ConnectionFactoryInterface $connectionFactory): ClientBuilder
     {
@@ -190,6 +257,7 @@ class ClientBuilder
      *
      * @param AbstractConnectionPool|string $connectionPool
      * @param array $args
+     * @return $this
      * @throws \InvalidArgumentException
      */
     public function setConnectionPool($connectionPool, array $args = []): ClientBuilder
@@ -210,6 +278,7 @@ class ClientBuilder
      * Set the endpoint
      *
      * @param callable $endpoint
+     * @return $this
      */
     public function setEndpoint(callable $endpoint): ClientBuilder
     {
@@ -220,8 +289,9 @@ class ClientBuilder
 
     /**
      * Register namespace
-     *
      * @param NamespaceBuilderInterface $namespaceBuilder
+     * @return $this
+     *
      */
     public function registerNamespace(NamespaceBuilderInterface $namespaceBuilder): ClientBuilder
     {
@@ -232,8 +302,9 @@ class ClientBuilder
 
     /**
      * Set the transport
-     *
      * @param Transport $transport
+     * @return $this
+     *
      */
     public function setTransport(Transport $transport): ClientBuilder
     {
@@ -243,9 +314,10 @@ class ClientBuilder
     }
 
     /**
-     * Set the HTTP handler (cURL is default)
+     * Set the HTTP handler (swooleHandler is default)
      *
      * @param mixed $handler
+     * @return $this
      */
     public function setHandler($handler): ClientBuilder
     {
@@ -258,6 +330,7 @@ class ClientBuilder
      * Set the PSR-3 Logger
      *
      * @param LoggerInterface $logger
+     * @return $this
      */
     public function setLogger(LoggerInterface $logger): ClientBuilder
     {
@@ -270,6 +343,7 @@ class ClientBuilder
      * Set the PSR-3 tracer
      *
      * @param LoggerInterface $tracer
+     * @return $this
      */
     public function setTracer(LoggerInterface $tracer): ClientBuilder
     {
@@ -282,6 +356,7 @@ class ClientBuilder
      * Set the serializer
      *
      * @param \LavaMusic\ElasticSearch\Serializers\SerializerInterface|string $serializer
+     * @return $this
      */
     public function setSerializer($serializer): ClientBuilder
     {
@@ -299,6 +374,191 @@ class ClientBuilder
     public function setHosts(array $hosts): ClientBuilder
     {
         $this->hosts = $hosts;
+
+        return $this;
+    }
+
+    /**
+     * Set the APIKey Pair, consiting of the API Id and the ApiKey of the Response from /_security/api_key
+     *
+     * @throws AuthenticationConfigException
+     */
+    public function setApiKey(string $id, string $apiKey): ClientBuilder
+    {
+        if (isset($this->connectionParams['client']['swoole']['http_auth']) === true) {
+            throw new AuthenticationConfigException("You can't use APIKey - and Basic Authenication together.");
+        }
+
+        $this->connectionParams['client']['headers']['Authorization'] = [
+            'ApiKey ' . base64_encode($id . ':' . $apiKey)
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Set Basic access authentication
+     *
+     * @see https://en.wikipedia.org/wiki/Basic_access_authentication
+     * @param string $username
+     * @param string $password
+     * @return $this
+     * @throws AuthenticationConfigException
+     */
+    public function setBasicAuthentication(string $username, string $password): ClientBuilder
+    {
+        if (isset($this->connectionParams['client']['headers']['Authorization']) === true) {
+            throw new AuthenticationConfigException("You can't use APIKey - and Basic Authenication together.");
+        }
+
+        if (isset($this->connectionParams['client']['swoole']) === false) {
+            $this->connectionParams['client']['swoole'] = [];
+        }
+
+        $this->connectionParams['client']['swoole'] += [
+            'http_auth' => 'auth_basic',
+            'user_pwd_str' => $username . ':' . $password
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Set Elastic Cloud ID to connect to Elastic Cloud
+     *
+     * @param string $cloudId
+     * @return $this
+     */
+    public function setElasticCloudId(string $cloudId): ClientBuilder
+    {
+        // Register the Hosts array
+        $this->setHosts(
+            [
+                [
+                    'host' => $this->parseElasticCloudId($cloudId),
+                    'port' => '',
+                    'scheme' => 'https',
+                ]
+            ]
+        );
+
+        if (!isset($this->connectionParams['client']['swoole']['encoding'])) {
+            // Merge best practices for the connection (enable gzip)
+            $this->connectionParams['client']['swoole']['encoding'] = 'gzip';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set connection parameters
+     *
+     * @param array $params
+     * @return $this
+     */
+    public function setConnectionParams(array $params): ClientBuilder
+    {
+        $this->connectionParams = $params;
+
+        return $this;
+    }
+
+    /**
+     * Set number or retries (default is equal to number of nodes)
+     *
+     * @param int $retries
+     * @return $this
+     */
+    public function setRetries(int $retries): ClientBuilder
+    {
+        $this->retries = $retries;
+
+        return $this;
+    }
+
+    /**
+     * Set the selector algorithm
+     *
+     * @param \LavaMusic\Elasticsearch\ConnectionPool\Selectors\SelectorInterface|string $selector
+     * @return $this
+     */
+    public function setSelector($selector): ClientBuilder
+    {
+        $this->parseStringOrObject($selector, $this->selector, 'SelectorInterface');
+
+        return $this;
+    }
+
+    /**
+     * Set sniff on start
+     *
+     * @param bool $sniffOnStart enable or disable sniff on start
+     * @return $this
+     */
+
+    public function setSniffOnStart(bool $sniffOnStart): ClientBuilder
+    {
+        $this->sniffOnStart = $sniffOnStart;
+
+        return $this;
+    }
+
+    /**
+     * Set SSL certificate
+     *
+     * @param string $cert The name of a file containing a PEM formatted certificate.
+     * @param string $password if the certificate requires a password
+     */
+    public function setSSLCert(string $cert, string $password = null): ClientBuilder
+    {
+        $this->sslCert = [$cert, $password];
+
+        return $this;
+    }
+
+    /**
+     * Set SSL key
+     *
+     * @param string $key The name of a file containing a private SSL key
+     * @param string $password if the private key requires a password
+     */
+    public function setSSLKey(string $key, string $password = null): ClientBuilder
+    {
+        $this->sslKey = [$key, $password];
+
+        return $this;
+    }
+
+    /**
+     * Set SSL verification
+     *
+     * @param bool|string $value
+     */
+    public function setSSLVerification($value = true): ClientBuilder
+    {
+        $this->sslVerification = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set or disable the x-elastic-client-meta header
+     */
+    public function setElasticMetaHeader($value = true): ClientBuilder
+    {
+        $this->elasticMetaHeader = $value;
+
+        return $this;
+    }
+
+    /**
+     * Include the port in Host header
+     *
+     * @see https://github.com/elastic/elasticsearch-php/issues/993
+     */
+    public function includePortInHostHeader(bool $enable): ClientBuilder
+    {
+        $this->includePortInHostHeader = $enable;
 
         return $this;
     }
@@ -439,7 +699,7 @@ class ClientBuilder
         return new Client($transport, $endpoint, $registeredNamespaces);
     }
 
-    public function buildLoggers(): void
+    private function buildLoggers(): void
     {
         if (is_null($this->logger)) {
             $this->logger = new NullLogger();
@@ -563,5 +823,27 @@ class ClientBuilder
         }
 
         return $host;
+    }
+
+    /**
+     * Parse the Elastic Cloud Params from the CloudId
+     *
+     * @param string $cloudId
+     *
+     * @return string
+     *
+     * @throws ElasticCloudIdParseException
+     */
+    private function parseElasticCloudId(string $cloudId): string
+    {
+        try {
+            list($name, $encoded) = explode(':', $cloudId);
+            list($uri, $uuids) = explode('$', base64_decode($encoded));
+            list($es,) = explode(':', $uuids);
+
+            return $es . '.' . $uri;
+        } catch (\Throwable $t) {
+            throw new ElasticCloudIdParseException('could not parse the Cloud ID:' . $cloudId);
+        }
     }
 }

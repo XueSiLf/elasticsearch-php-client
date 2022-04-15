@@ -1,0 +1,40 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * Author: hlh XueSi
+ * Email: 1592328848@qq.com
+ * Date: 2022/4/15 15:45:17
+ */
+declare(strict_types=1);
+
+namespace LavaMusic\ElasticSearch\Endpoints\Rollup;
+
+use LavaMusic\ElasticSearch\Common\Exceptions\RuntimeException;
+use LavaMusic\ElasticSearch\Endpoints\AbstractEndpoint;
+
+/**
+ * Class StartJob
+ * Elasticsearch API name rollup.start_job
+ */
+class StartJob extends AbstractEndpoint
+{
+    public function getURI(): string
+    {
+        $id = $this->id ?? null;
+
+        if (isset($id)) {
+            return "/_rollup/job/$id/_start";
+        }
+        throw new RuntimeException('Missing parameter for the endpoint rollup.start_job');
+    }
+
+    public function getParamWhitelist(): array
+    {
+        return [];
+    }
+
+    public function getMethod(): string
+    {
+        return 'POST';
+    }
+}

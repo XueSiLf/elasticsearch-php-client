@@ -81,7 +81,7 @@ class Transport
      * @param null $body Optional query body
      * @param array $options
      *
-     * @return mixed
+     * @return array
      *
      * @throws Common\Exceptions\NoNodesAvailableException|\Exception
      */

@@ -1,10 +1,11 @@
 <?php
 /**
  * Created by PhpStorm.
- * Author: 黄龙辉 XueSi
+ * Author: hlh XueSi
  * Email: 1592328848@qq.com
  * Date: 2022/4/12 10:42:30
  */
+declare(strict_types=1);
 
 namespace LavaMusic\ElasticSearch\Endpoints\Indices;
 
@@ -14,7 +15,6 @@ use LavaMusic\ElasticSearch\Endpoints\AbstractEndpoint;
 /**
  * Class PutMapping
  * Elasticsearch API name indices.put_mapping
- *
  */
 class PutMapping extends AbstractEndpoint
 {
