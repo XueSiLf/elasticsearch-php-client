@@ -507,11 +507,16 @@ class ClientBuilder
      * Set SSL certificate
      *
      * @param string $cert The name of a file containing a PEM formatted certificate.
-     * @param string $password if the certificate requires a password
      */
-    public function setSSLCert(string $cert, string $password = null): ClientBuilder
+    public function setSSLCert(string $cert): ClientBuilder
     {
-        $this->sslCert = [$cert, $password];
+        if (!file_exists($cert)) {
+            throw new \InvalidArgumentException(
+                "SSL certificate not found: {$cert}"
+            );
+        }
+
+        $this->sslCert = $cert;
 
         return $this;
     }
@@ -520,11 +525,16 @@ class ClientBuilder
      * Set SSL key
      *
      * @param string $key The name of a file containing a private SSL key
-     * @param string $password if the private key requires a password
      */
-    public function setSSLKey(string $key, string $password = null): ClientBuilder
+    public function setSSLKey(string $key): ClientBuilder
     {
-        $this->sslKey = [$key, $password];
+        if (!file_exists($key)) {
+            throw new \InvalidArgumentException(
+                "SSL private key not found: {$key}"
+            );
+        }
+
+        $this->sslKey = $key;
 
         return $this;
     }

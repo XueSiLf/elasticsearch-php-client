@@ -114,12 +114,12 @@ class SwooleClientFactory
         }
 
         return $response + [
-            'status' => null,
-            'reason' => null,
-            'body' => null,
-            'headers' => [],
-            'error' => $error,
-        ];
+                'status' => null,
+                'reason' => null,
+                'body' => null,
+                'headers' => [],
+                'error' => $error,
+            ];
     }
 
     private function getDefaultOptions(array $request)
@@ -265,20 +265,10 @@ class SwooleClientFactory
                     break;
 
                 case 'cert':
-                    if (!file_exists($value)) {
-                        throw new \InvalidArgumentException(
-                            "SSL certificate not found: {$value}"
-                        );
-                    }
                     $options['ssl_cert'] = $value;
                     break;
 
                 case 'ssl_key':
-                    if (!file_exists($value)) {
-                        throw new \InvalidArgumentException(
-                            "SSL private key not found: {$value}"
-                        );
-                    }
                     $options['ssl_key'] = $value;
                     break;
 

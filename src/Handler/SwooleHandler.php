@@ -133,8 +133,23 @@ class SwooleHandler
         $scheme = $request['scheme'];
         $host = $headers['Host'];
 
-        $xElasticClientMetaStatus = $clientOptions['x-elastic-client-meta'];
+        // $xElasticClientMetaStatus = $clientOptions['x-elastic-client-meta'];
         $port = $clientOptions['swoole']['port'];
+
+        if (isset($clientOptions['swoole']['encoding'])) {
+            $headers['Encoding'] = [$clientOptions['swoole']['encoding']];
+        }
+
+        if (isset($clientOptions['swoole']['http_auth']) && $clientOptions['swoole']['http_auth'] === 'http_auth') {
+            if (!isset($clientOptions['swoole']['user_pwd_str']) || empty($clientOptions['swoole']['user_pwd_str'])) {
+                throw new \Exception('The user or password params is empty when use http basic auth.');
+            }
+            $userPwdArr = explode(':', $clientOptions['swoole']['user_pwd_str']);
+            if (count($userPwdArr) !== 2) {
+                throw new \Exception('The user or password params is empty when use http basic auth.');
+            }
+            $client->setBasicAuth($userPwdArr[0], $userPwdArr[1]);
+        }
 
         $url = "{$scheme}://{$host}:{$port}";
 
