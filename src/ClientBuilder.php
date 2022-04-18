@@ -564,7 +564,7 @@ class ClientBuilder
     }
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getElasticClientApiVersioning(): ?string
     {

@@ -92,6 +92,38 @@ class SwooleHandler
         $options = $result[2]; // request options
         $clientOptions = $options['client'];
 
+        // handle verify
+        if (isset($options['ssl_verify_peer']) && $options['ssl_verify_peer'] === true) {
+            if (!isset($options['ssl_cert']) || !isset($options['ssl_key'])) {
+                throw new \Exception('The option cert or ssl_key is not set.');
+            }
+            $client->setSslCertFile($options['ssl_cert']);
+            $client->setSslKeyFile($options['ssl_key']);
+            $client->setSslVerifyPeer(true,true);
+            $client->setSslCafile($options['ssl_cafile']);
+        }
+
+        // handle decode_content
+        if (isset($options['accept-encoding'])) {
+            $headers['Accept-Encoding'] = [$options['accept-encoding']];
+        }
+
+        // handle timeout
+        if (isset($options['timeout'])) {
+            $client->setTimeout((float)($options['timeout']));
+        }
+
+        // handle connect_time
+        if (isset($options['connect_timeout'])) {
+            $client->setConnectTimeout((float)($options['connect_timeout']));
+        }
+
+        // handle proxy
+        if (isset($options['proxy'])) {
+            $proxyOption = $options['proxy'];
+            $client->setProxyHttp($proxyOption['host'], $proxyOption['port'], $proxyOption['user'], $proxyOption['pass']);
+        }
+
         // 延迟请求
         Core::doSleep($request);
 
@@ -105,6 +137,10 @@ class SwooleHandler
         $port = $clientOptions['swoole']['port'];
 
         $url = "{$scheme}://{$host}:{$port}";
+
+        if ($scheme == 'https') {
+            $client->setEnableSSL(true);
+        }
 
         $client->setUrl($url);
         $client->setPath($request['uri']);
@@ -126,6 +162,10 @@ class SwooleHandler
             case 'post':
                 /** @var Response $responseBean */
                 $responseBean = $client->post($body);
+                break;
+            case 'head':
+                /** @var Response $responseBean */
+                $responseBean = $client->head();
                 break;
         }
 

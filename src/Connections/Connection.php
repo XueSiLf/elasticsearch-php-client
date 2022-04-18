@@ -394,7 +394,6 @@ class Connection implements ConnectionInterface
                 'port' => $port,
                 'headers' => $request['headers'],
                 'HTTP code' => $response['status'],
-                'duration' => $response['transfer_stats']['total_time'],
             )
         );
         $this->log->debug('Response', array($response['body']));
@@ -410,7 +409,6 @@ class Connection implements ConnectionInterface
                 'uri' => $uri,
                 'port' => $port,
                 'HTTP code' => $response['status'],
-                'duration' => $response['transfer_stats']['total_time'],
             )
         );
     }

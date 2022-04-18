@@ -209,9 +209,11 @@ class SwooleClientFactory
                         continue 2;
                     }
 
+                    // ssl_verify_peer https://wiki.swoole.com/#/server/setting?id=ssl_verify_peer
                     $options['ssl_verify_peer'] = true;
 
                     if (is_string($value)) {
+                        // ssl_client_cert_file https://wiki.swoole.com/#/server/setting?id=ssl_client_cert_file
                         $options['ssl_cafile'] = $value;
                         if (!file_exists($value)) {
                             throw new \InvalidArgumentException(
@@ -227,11 +229,7 @@ class SwooleClientFactory
                     }
                     $accept = Core::firstHeader($request, 'Accept-Encoding');
                     if ($accept) {
-                        $options['encoding'] = $accept;
-                    } else {
-                        $options['encoding'] = '';
-                        // Don't let swoole http client send the header over the wire
-                        $options['headers'][] = 'Accept-Encoding:';
+                        $options['accept-encoding'] = $accept;
                     }
                     break;
 
@@ -248,20 +246,25 @@ class SwooleClientFactory
 
                 case 'proxy':
                     if (!is_array($value)) {
-                        $options['proxy'] = $value;
-                    } elseif (isset($request['scheme'])) {
-                        $scheme = $request['scheme'];
-                        if (isset($value[$scheme])) {
-                            $options['proxy'] = $value[$scheme];
+                        throw new \InvalidArgumentException("The format of the client option 'proxy' is not a array.");
+                    } else {
+                        if (!isset($value['host'])
+                            || !isset($value['port'])
+                            || !isset($value['user'])
+                            || !isset($value['password'])
+                        ) {
+                            throw new \InvalidArgumentException("The client option 'proxy' is not valid.");
                         }
+                        $options['proxy'] = [
+                            'host' => $value['host'],
+                            'port' => $value['port'],
+                            'user' => $value['user'],
+                            'pass' => $value['password'],
+                        ];
                     }
                     break;
 
                 case 'cert':
-                    if (is_array($value)) {
-                        $options['ssl_cert_passwd'] = $value[1];
-                        $value = $value[0];
-                    }
                     if (!file_exists($value)) {
                         throw new \InvalidArgumentException(
                             "SSL certificate not found: {$value}"
@@ -271,10 +274,6 @@ class SwooleClientFactory
                     break;
 
                 case 'ssl_key':
-                    if (is_array($value)) {
-                        $options['ssl_key_passwd'] = $value[1];
-                        $value = $value[0];
-                    }
                     if (!file_exists($value)) {
                         throw new \InvalidArgumentException(
                             "SSL private key not found: {$value}"
