@@ -583,10 +583,12 @@ class ClientBuilder
 
     /**
      * @param string $elasticClientApiVersioning
+     * @return $this
      */
-    public function setElasticClientApiVersioning(string $elasticClientApiVersioning): void
+    public function setElasticClientApiVersioning(string $elasticClientApiVersioning)
     {
         $this->elasticClientApiVersioning = $elasticClientApiVersioning;
+        return $this;
     }
 
     /**

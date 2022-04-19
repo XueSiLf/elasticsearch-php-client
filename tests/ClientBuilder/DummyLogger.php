@@ -1,0 +1,15 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * Author: hlh XueSi
+ * Email: 1592328848@qq.com
+ * Date: 2022/4/19 9:56:08
+ */
+declare(strict_types=1);
+
+namespace LavaMusic\ElasticSearch\Tests\ClientBuilder;
+
+class DummyLogger
+{
+
+}

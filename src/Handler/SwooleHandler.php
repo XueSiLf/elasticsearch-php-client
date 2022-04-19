@@ -137,7 +137,7 @@ class SwooleHandler
         $port = $clientOptions['swoole']['port'];
 
         if (isset($clientOptions['swoole']['encoding'])) {
-            $headers['Encoding'] = [$clientOptions['swoole']['encoding']];
+            $headers['Encoding'] = $clientOptions['swoole']['encoding'];
         }
 
         if (isset($clientOptions['swoole']['http_auth']) && $clientOptions['swoole']['http_auth'] === 'http_auth') {
@@ -151,7 +151,14 @@ class SwooleHandler
             $client->setBasicAuth($userPwdArr[0], $userPwdArr[1]);
         }
 
-        $url = "{$scheme}://{$host}:{$port}";
+        $hostPortStr = "{$host}:{$port}";
+        if (isset($clientOptions['port_in_header']) && $clientOptions['port_in_header'] === true) {
+            $hostPortStr = $host;
+        }
+
+        $url = "{$scheme}://$hostPortStr";
+
+        var_dump($url);
 
         if ($scheme == 'https') {
             $client->setEnableSSL(true);
