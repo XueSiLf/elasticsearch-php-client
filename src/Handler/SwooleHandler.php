@@ -158,8 +158,6 @@ class SwooleHandler
 
         $url = "{$scheme}://$hostPortStr";
 
-        var_dump($url);
-
         if ($scheme == 'https') {
             $client->setEnableSSL(true);
         }
